@@ -107,44 +107,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private ArrayList<Sensores> prepareDataSet(){
+        // Se declaran los sensores que aparecerán en el GridView
         ArrayList<Sensores> sensores = new ArrayList<>();
         Sensores sensor;
 
         // Temperatura
         sensor = new Sensores("Temperatura");
         sensor.setMedida(strData[POS_TEMPERATURA]);
-        sensor.setColor("#2146C6");
+        sensor.setColor("#708AE4"); // Color del BackGround en Hexa
         sensores.add(sensor);
 
 
         // Humedad
         sensor = new Sensores("Humedad");
         sensor.setMedida(strData[POS_HUMEDAD]);
+        sensor.setColor("#9770E4");
         sensores.add(sensor);
 
         // Luz UV
         sensor = new Sensores("Luz UV");
         sensor.setMedida(strData[POS_LUZ_UV]);
+        sensor.setColor("#70E48A");
         sensores.add(sensor);
 
         // Luz IR
         sensor = new Sensores("Luz IR");
         sensor.setMedida(strData[POS_LUZ_IR]);
+        sensor.setColor("#DBE470");
         sensores.add(sensor);
 
         // Voltaje
         sensor = new Sensores("Voltaje");
         sensor.setMedida(strData[POS_VOLTAJE]);
+        sensor.setColor("#E49E70");
         sensores.add(sensor);
 
         // Corriente
         sensor = new Sensores("Corriente");
         sensor.setMedida(strData[POS_CORRIENTE]);
+        sensor.setColor("#E470A5");
         sensores.add(sensor);
 
         // Potencia
         sensor = new Sensores("Potencia");
         sensor.setMedida(strData[POS_POTENCIA]);
+        sensor.setColor("#6DBF37");
         sensores.add(sensor);
 
         return sensores;
