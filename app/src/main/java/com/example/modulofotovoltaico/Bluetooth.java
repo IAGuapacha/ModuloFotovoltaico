@@ -239,24 +239,25 @@ public class Bluetooth extends Activity implements OnItemClickListener{
         StringBuffer sbb = new StringBuffer();
         public void run() {
 
-            byte[] buffer;  // buffer store for the stream
-            int bytes; // bytes returned from read()
-
+            byte[] buffer = new byte[1024];;  // buffer store for the stream
+            int bytes = 0; // bytes returned from read()buffer =
             // Keep listening to the InputStream until an exception occurs
             while (true) {
                 try {
-                    try {
-                        sleep(30);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                    buffer[bytes] = (byte) mmInStream.read();
+                    if (buffer[bytes] == '\n') { // Define caracter delimitador el salto de linea
+                        mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                        bytes = 0;
+                    } else {
+                        bytes++;
                     }
 
-                    buffer = new byte[1024];
+
+
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+                    // bytes = mmInStream.read(buffer);
                     // Send the obtained bytes to the UI activity
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+
                 } catch (IOException e) {
                     break;
                 }

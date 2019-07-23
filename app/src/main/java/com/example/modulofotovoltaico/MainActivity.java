@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button bConnect;
     TextView lblData;
     private GridView gridData;
+    private GridAdapter gridAdapter;
     ArrayList<Sensores> dataSensores;
     private final int POS_TEMPERATURA = 0;
     private final int POS_HUMEDAD = 1;
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int POS_VOLTAJE = 4;
     private final int POS_CORRIENTE = 5;
     private final int POS_POTENCIA  = 6;
+
+    public String strData[] = {"NaN","NaN","NaN","NaN","NaN","NaN","NaN"};
+
 
 
     @SuppressLint("HandlerLeak")
@@ -47,11 +51,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                   break;
               case Bluetooth.MESSAGE_READ:
                   byte[] readBuf = (byte[]) msg.obj;
-                  String strIncom = new String(readBuf,0,5);
+
+                  String strIncom = new String(readBuf,0,msg.arg1);
 
                   Log.d("strIncom", strIncom);
                   lblData.setText(strIncom);
-                  String strData[] = strIncom.split(",");
+                  strData = strIncom.split(",");
+
+                  actualizarSensores();
                   break;
           }
       }
@@ -93,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dataSensores = prepareDataSet();
         gridData = (GridView)findViewById(R.id.gridData);
 
-        GridAdapter gridAdapter = new GridAdapter(this,dataSensores);
+        gridAdapter = new GridAdapter(this,dataSensores);
 
         gridData.setAdapter(gridAdapter);
 
@@ -103,47 +110,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ArrayList<Sensores> sensores = new ArrayList<>();
         Sensores sensor;
 
-        String test  = "2.89,3.12,3.33,4.44,0.01";
-        String[] strResult = test.split(",");
-
         // Temperatura
         sensor = new Sensores("Temperatura");
-        sensor.setMedida("1.00");
+        sensor.setMedida(strData[POS_TEMPERATURA]);
         sensor.setColor("#2146C6");
         sensores.add(sensor);
 
 
         // Humedad
         sensor = new Sensores("Humedad");
-        sensor.setMedida("2.00");
+        sensor.setMedida(strData[POS_HUMEDAD]);
         sensores.add(sensor);
 
         // Luz UV
         sensor = new Sensores("Luz UV");
-        sensor.setMedida("3.00");
+        sensor.setMedida(strData[POS_LUZ_UV]);
         sensores.add(sensor);
 
         // Luz IR
         sensor = new Sensores("Luz IR");
-        sensor.setMedida("4.00");
+        sensor.setMedida(strData[POS_LUZ_IR]);
         sensores.add(sensor);
 
         // Voltaje
         sensor = new Sensores("Voltaje");
-        sensor.setMedida("5.00");
+        sensor.setMedida(strData[POS_VOLTAJE]);
         sensores.add(sensor);
 
         // Corriente
         sensor = new Sensores("Corriente");
-        sensor.setMedida("6.00");
+        sensor.setMedida(strData[POS_CORRIENTE]);
         sensores.add(sensor);
 
         // Potencia
         sensor = new Sensores("Potencia");
-        sensor.setMedida("3.00");
+        sensor.setMedida(strData[POS_POTENCIA]);
         sensores.add(sensor);
 
         return sensores;
+    }
+
+    public void actualizarSensores(){
+        // Se actualiza cada elemento del grid con cada dato nuevo
+        for(int i = 0;i<strData.length;i++){
+            gridAdapter.setMedida(i,strData[i]);
+        }
+
+        gridData.setAdapter(gridAdapter);
+
+
     }
 
     void buttonInit(){

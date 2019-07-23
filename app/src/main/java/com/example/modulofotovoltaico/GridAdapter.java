@@ -17,6 +17,7 @@ public class GridAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<Sensores> dataSensores;
     private LayoutInflater mInflaterCatalogListItems;
+    ViewHolder holder;
 
 
     public GridAdapter(Context context, ArrayList<Sensores> dataSensores){
@@ -42,8 +43,6 @@ public class GridAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
-
-        ViewHolder holder;
 
         if(convertView == null){
             holder = new ViewHolder();
@@ -71,6 +70,11 @@ public class GridAdapter extends BaseAdapter {
         TextView Sensor;
         TextView Medida;
         LinearLayout linearLayout;
+    }
+
+    public void setMedida(int position,String medida){
+        dataSensores.get(position).setMedida(medida);
+        holder.Medida.setText(medida);
     }
 
 }
