@@ -25,24 +25,36 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class Bluetooth extends Activity implements OnItemClickListener{
+public class Bluetooth {
 
-    public static void disconnect(){
+    public Bluetooth() {
+        // Verifica que BT se encuentre encendido
+        init();
+        if (!btAdapter.isEnabled()) {
+            turnOnBT();
+        }
+        getPairedDevices();
+    }
+
+    public static void disconnect() {
         if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
         }
     }
 
-    public static void gethandler(Handler handler){//Bluetooth handler
+
+    public static void gethandler(Handler handler) {//Bluetooth handler
         mHandler = handler;
     }
+
     static Handler mHandler = new Handler();
 
     static ConnectedThread connectedThread;
     public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     protected static final int SUCCESS_CONNECT = 0;
     protected static final int MESSAGE_READ = 1;
+    private String moduloName = "HC-06";
     ArrayAdapter<String> listAdapter;
     ListView listView;
     static BluetoothAdapter btAdapter;
@@ -52,121 +64,67 @@ public class Bluetooth extends Activity implements OnItemClickListener{
     IntentFilter filter;
     BroadcastReceiver receiver;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bluetooth);
-        init();
-        if (btAdapter==null){
-            Toast.makeText(getApplicationContext(), "No bluetooth detected", Toast.LENGTH_SHORT).show();
-            finish();
-        }else{
-            if (!btAdapter.isEnabled()){
-                turnOnBT();
-            }
-            getPairedDevices();
-            startDiscovery();
-        }
-
-    }
-
-
     private void startDiscovery() {
-        // TODO Auto-generated method stub
+        // Inicia la busqueda de nuevos dispositivos
         btAdapter.cancelDiscovery();
         btAdapter.startDiscovery();
     }
 
     private void turnOnBT() {
+        // Enciende Bluetooth si esta apagado
         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(intent, 1);
     }
 
     private void getPairedDevices() {
-        devicesArray = btAdapter.getBondedDevices();
-        if (devicesArray.size()>0){
-            for(BluetoothDevice device:devicesArray){
-                pairedDevices.add(device.getName());
+        // Busca entre los dispositivos emparejados el nombre del modulo y se conecta
+        devicesArray = btAdapter.getBondedDevices(); // Obtiene Array de dispositivos emparejados
+        if (devicesArray.size() > 0) {
+            for (BluetoothDevice device : devicesArray) {
+                pairedDevices.add(device.getName()); // Guarda los dispositivos emparejados
+                // Conexion validando que el modulo se encuentre en la lista de dispositivos emparejados
+                if (device.getName().equals(moduloName)) {
+                    ConnectThread connect = new ConnectThread(device);
+                    connect.start();
+                    Log.d("Conexion realiada con", device.getName());
+                }
             }
         }
     }
 
-    private void init(){
-        listView = (ListView)findViewById(R.id.listView);
-        listView.setOnItemClickListener(this);
-        listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,0);
-        listView.setAdapter(listAdapter);
+    private void init() {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         pairedDevices = new ArrayList<String>();
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         devices = new ArrayList<BluetoothDevice>();
-        receiver = new BroadcastReceiver(){
+        receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
-                if (BluetoothDevice.ACTION_FOUND.equals(action)){
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     devices.add(device);
                     String s = "";
-                    for(int a=0;a<pairedDevices.size();a++){
-                        if (device.getName().equals(pairedDevices.get(a))){
+                    for (int a = 0; a < pairedDevices.size(); a++) {
+                        if (device.getName().equals(pairedDevices.get(a))) {
                             //append
                             s = "(Paired)";
                             break;
                         }
                     }
-                    listAdapter.add(device.getName()+" "+s+" "+"\n"+device.getAddress());
+                    listAdapter.add(device.getName() + " " + s + " " + "\n" + device.getAddress());
 
-                }else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)){
+                } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
 
-                }else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
+                } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 
-                }else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)){
-                    if (btAdapter.getState() == btAdapter.STATE_OFF){
+                } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                    if (btAdapter.getState() == btAdapter.STATE_OFF) {
                         turnOnBT();
                     }
                 }
             }
 
         };
-
-        registerReceiver(receiver, filter);
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        registerReceiver(receiver, filter);
-        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(receiver, filter);
-        filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-    }
-
-    @Override
-    protected void onPause() {
-        // TODO Auto-generated method stub
-        super.onPause();
-        unregisterReceiver(receiver);
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_CANCELED){
-            Toast.makeText(getApplicationContext(), "Bluetooth must be enabled to continue", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        // TODO Auto-generated method stub
-        if (btAdapter.isDiscovering()){
-            btAdapter.cancelDiscovery();
-        }
-        if (listAdapter.getItem(arg2).contains("(Paired)")){
-
-            BluetoothDevice selectedDevice = devices.get(arg2);
-            ConnectThread connect = new ConnectThread(selectedDevice);
-            connect.start();
-        }else {
-            Toast.makeText(getApplicationContext(), "device is not paired", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private class ConnectThread extends Thread {
@@ -183,7 +141,8 @@ public class Bluetooth extends Activity implements OnItemClickListener{
             try {
                 // MY_UUID is the app's UUID string, also used by the server code
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
             mmSocket = tmp;
         }
 
@@ -200,7 +159,8 @@ public class Bluetooth extends Activity implements OnItemClickListener{
                 // Unable to connect; close the socket and get out
                 try {
                     mmSocket.close();
-                } catch (IOException closeException) { }
+                } catch (IOException closeException) {
+                }
                 return;
             }
 
@@ -208,11 +168,14 @@ public class Bluetooth extends Activity implements OnItemClickListener{
             mHandler.obtainMessage(SUCCESS_CONNECT, mmSocket).sendToTarget();
         }
 
-        /** Will cancel an in-progress connection, and close the socket */
+        /**
+         * Will cancel an in-progress connection, and close the socket
+         */
         public void cancel() {
             try {
                 mmSocket.close();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
         }
     }
 
@@ -231,17 +194,21 @@ public class Bluetooth extends Activity implements OnItemClickListener{
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
+
         StringBuffer sbb = new StringBuffer();
+
         public void run() {
 
-            byte[] buffer = new byte[1024];;  // buffer store for the stream
+            byte[] buffer = new byte[1024];
+            ;  // buffer store for the stream
             int bytes = 0; // bytes returned from read()buffer =
-            // Keep listening to the InputStream until an exception occurs
+            // Lee hasta encontrar el caracter delimitador
             while (true) {
                 try {
                     buffer[bytes] = (byte) mmInStream.read();
@@ -251,13 +218,6 @@ public class Bluetooth extends Activity implements OnItemClickListener{
                     } else {
                         bytes++;
                     }
-
-
-
-                    // Read from the InputStream
-                    // bytes = mmInStream.read(buffer);
-                    // Send the obtained bytes to the UI activity
-
                 } catch (IOException e) {
                     break;
                 }
@@ -269,22 +229,24 @@ public class Bluetooth extends Activity implements OnItemClickListener{
 
             try {
                 mmOutStream.write(income.getBytes());
-                for(int i=0;i<income.getBytes().length;i++)
-                    Log.v("outStream"+Integer.toString(i),Character.toString((char)(Integer.parseInt(Byte.toString(income.getBytes()[i])))));
+                for (int i = 0; i < income.getBytes().length; i++)
+                    Log.v("outStream" + Integer.toString(i), Character.toString((char) (Integer.parseInt(Byte.toString(income.getBytes()[i])))));
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
         }
 
         /* Call this from the main activity to shutdown the connection */
         public void cancel() {
             try {
                 mmSocket.close();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
         }
     }
 
