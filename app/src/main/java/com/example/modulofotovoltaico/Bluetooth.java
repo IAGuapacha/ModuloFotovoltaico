@@ -1,13 +1,5 @@
 package com.example.modulofotovoltaico;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.UUID;
-
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -15,20 +7,39 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.UUID;
 
 public class Bluetooth {
 
-    public Bluetooth() {
+    static Handler mHandler = new Handler();
+
+    static ConnectedThread connectedThread;
+    public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    protected static final int SUCCESS_CONNECT = 0;
+    protected static final int MESSAGE_READ = 1;
+    private String moduloName;
+    ArrayAdapter<String> listAdapter;
+    ListView listView;
+    static BluetoothAdapter btAdapter;
+    Set<BluetoothDevice> devicesArray;
+    ArrayList<String> pairedDevices;
+    ArrayList<BluetoothDevice> devices;
+    IntentFilter filter;
+    BroadcastReceiver receiver;
+
+    public Bluetooth(String moduloName) {
         // Verifica que BT se encuentre encendido
+        this.moduloName = moduloName;
         init();
         if (!btAdapter.isEnabled()) {
             turnOnBT();
@@ -47,22 +58,6 @@ public class Bluetooth {
     public static void gethandler(Handler handler) {//Bluetooth handler
         mHandler = handler;
     }
-
-    static Handler mHandler = new Handler();
-
-    static ConnectedThread connectedThread;
-    public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    protected static final int SUCCESS_CONNECT = 0;
-    protected static final int MESSAGE_READ = 1;
-    private String moduloName = "HC-06";
-    ArrayAdapter<String> listAdapter;
-    ListView listView;
-    static BluetoothAdapter btAdapter;
-    Set<BluetoothDevice> devicesArray;
-    ArrayList<String> pairedDevices;
-    ArrayList<BluetoothDevice> devices;
-    IntentFilter filter;
-    BroadcastReceiver receiver;
 
     private void startDiscovery() {
         // Inicia la busqueda de nuevos dispositivos

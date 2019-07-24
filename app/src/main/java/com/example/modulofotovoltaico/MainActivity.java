@@ -21,8 +21,12 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private String nombreModulo = "HC-06";
+
     Button bConnect;
+    Button btnDesconectar;
     TextView lblData;
+
     private GridView gridData;
     private GridAdapter gridAdapter;
     ArrayList<Sensor> dataSensores;
@@ -33,8 +37,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int POS_VOLTAJE = 4;
     private final int POS_CORRIENTE = 5;
     private final int POS_POTENCIA  = 6;
-
     public String strData[] = {"NaN","NaN","NaN","NaN","NaN","NaN","NaN"};
+
+    Bluetooth BT;
 
 
 
@@ -46,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
           switch (msg.what){
               case Bluetooth.SUCCESS_CONNECT:
                   Bluetooth.connectedThread = new Bluetooth.ConnectedThread((BluetoothSocket)msg.obj);
-                  Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_SHORT).show();
+                  Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_LONG).show();
                   Bluetooth.connectedThread.start();
                   break;
               case Bluetooth.MESSAGE_READ:
@@ -85,10 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             this.getSupportActionBar().hide();
         }
         catch (NullPointerException e){}
-
-
         setContentView(R.layout.activity_main);
-
         init();
         buttonInit();
 
@@ -162,15 +164,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for(int i = 0;i<strData.length;i++){
             gridAdapter.setMedida(i,strData[i]);
         }
-
         gridData.setAdapter(gridAdapter);
-
-
     }
 
     void buttonInit(){
+        // Agrega el evento a cada boton y fija Views
         bConnect = (Button)findViewById(R.id.bConnect);
         bConnect.setOnClickListener(this);
+
+        btnDesconectar = (Button) findViewById(R.id.btnDesconectar);
+        btnDesconectar.setOnClickListener(this);
 
         lblData = (TextView)findViewById(R.id.lblData);
         lblData.setText("Conectado");
@@ -180,8 +183,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.bConnect:
-                Bluetooth BT = new Bluetooth();
-            break;
+                // Inicializa la conexion BT con un modulo especifico
+                BT = new Bluetooth(nombreModulo);
+                break;
+            case R.id.btnDesconectar:
+                // Cierra la conexion BT
+                BT.disconnect();
+                Toast.makeText(getApplicationContext(),"Desconectado",Toast.LENGTH_LONG).show();
+                break;
         }
     }
 }
