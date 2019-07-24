@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView lblData;
     private GridView gridData;
     private GridAdapter gridAdapter;
-    ArrayList<Sensores> dataSensores;
+    ArrayList<Sensor> dataSensores;
     private final int POS_TEMPERATURA = 0;
     private final int POS_HUMEDAD = 1;
     private final int POS_LUZ_UV = 2;
@@ -106,50 +106,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private ArrayList<Sensores> prepareDataSet(){
+    private ArrayList<Sensor> prepareDataSet(){
         // Se declaran los sensores que aparecerán en el GridView
-        ArrayList<Sensores> sensores = new ArrayList<>();
-        Sensores sensor;
+        ArrayList<Sensor> sensores = new ArrayList<>();
+        Sensor sensor;
 
         // Temperatura
-        sensor = new Sensores("Temperatura");
+        sensor = new Sensor("Temperatura");
         sensor.setMedida(strData[POS_TEMPERATURA]);
         sensor.setColor("#708AE4"); // Color del BackGround en Hexa
         sensores.add(sensor);
 
 
         // Humedad
-        sensor = new Sensores("Humedad");
+        sensor = new Sensor("Humedad");
         sensor.setMedida(strData[POS_HUMEDAD]);
         sensor.setColor("#9770E4");
         sensores.add(sensor);
 
         // Luz UV
-        sensor = new Sensores("Luz UV");
+        sensor = new Sensor("Luz UV");
         sensor.setMedida(strData[POS_LUZ_UV]);
         sensor.setColor("#70E48A");
         sensores.add(sensor);
 
         // Luz IR
-        sensor = new Sensores("Luz IR");
+        sensor = new Sensor("Luz IR");
         sensor.setMedida(strData[POS_LUZ_IR]);
         sensor.setColor("#DBE470");
         sensores.add(sensor);
 
         // Voltaje
-        sensor = new Sensores("Voltaje");
+        sensor = new Sensor("Voltaje");
         sensor.setMedida(strData[POS_VOLTAJE]);
         sensor.setColor("#E49E70");
         sensores.add(sensor);
 
         // Corriente
-        sensor = new Sensores("Corriente");
+        sensor = new Sensor("Corriente");
         sensor.setMedida(strData[POS_CORRIENTE]);
         sensor.setColor("#E470A5");
         sensores.add(sensor);
 
         // Potencia
-        sensor = new Sensores("Potencia");
+        sensor = new Sensor("Potencia");
         sensor.setMedida(strData[POS_POTENCIA]);
         sensor.setColor("#6DBF37");
         sensores.add(sensor);
