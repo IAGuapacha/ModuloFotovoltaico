@@ -14,8 +14,13 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
 
@@ -25,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Button bConnect;
     Button btnDesconectar;
-    TextView lblData;
+    //TextView lblData;
 
     private GridView gridData;
     private GridAdapter gridAdapter;
@@ -40,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public String strData[] = {"NaN","NaN","NaN","NaN","NaN","NaN","NaN"};
 
     Bluetooth BT;
+
+    private static LinearLayout graphLayout;
+    private static GraphView graphView;
 
 
 
@@ -60,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                   String strIncom = new String(readBuf,0,msg.arg1);
 
                   Log.d("strIncom", strIncom);
-                  lblData.setText(strIncom);
+                  //lblData.setText(strIncom);
                   strData = strIncom.split(",");
 
                   actualizarSensores();
@@ -105,6 +113,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gridAdapter = new GridAdapter(this,dataSensores);
 
         gridData.setAdapter(gridAdapter);
+
+        graphView = (GraphView)findViewById(R.id.graph);
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+                new DataPoint(0, 1),
+                new DataPoint(1, 5),
+                new DataPoint(2, 3),
+                new DataPoint(3, 2),
+                new DataPoint(4, 6)
+        });
+    graphView.addSeries(series);
 
     }
 
@@ -175,8 +193,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnDesconectar = (Button) findViewById(R.id.btnDesconectar);
         btnDesconectar.setOnClickListener(this);
 
-        lblData = (TextView)findViewById(R.id.lblData);
-        lblData.setText("Conectado");
+        //lblData = (TextView)findViewById(R.id.lblData);
+        //lblData.setText("Conectado");
     }
 
     @Override
