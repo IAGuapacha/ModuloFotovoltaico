@@ -14,15 +14,24 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private String nombreModulo = "HC-06";
+
     Button bConnect;
-    TextView lblData;
+    Button btnDesconectar;
+    //TextView lblData;
+
     private GridView gridData;
     private GridAdapter gridAdapter;
     ArrayList<Sensor> dataSensores;
@@ -33,8 +42,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int POS_VOLTAJE = 4;
     private final int POS_CORRIENTE = 5;
     private final int POS_POTENCIA  = 6;
-
     public String strData[] = {"NaN","NaN","NaN","NaN","NaN","NaN","NaN"};
+
+    Bluetooth BT;
+
+    private static LinearLayout graphLayout;
+    private static GraphView graphView;
 
 
 
@@ -46,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
           switch (msg.what){
               case Bluetooth.SUCCESS_CONNECT:
                   Bluetooth.connectedThread = new Bluetooth.ConnectedThread((BluetoothSocket)msg.obj);
-                  Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_SHORT).show();
+                  Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_LONG).show();
                   Bluetooth.connectedThread.start();
                   break;
               case Bluetooth.MESSAGE_READ:
@@ -55,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                   String strIncom = new String(readBuf,0,msg.arg1);
 
                   Log.d("strIncom", strIncom);
-                  lblData.setText(strIncom);
+                  //lblData.setText(strIncom);
                   strData = strIncom.split(",");
 
                   actualizarSensores();
@@ -85,10 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             this.getSupportActionBar().hide();
         }
         catch (NullPointerException e){}
-
-
         setContentView(R.layout.activity_main);
-
         init();
         buttonInit();
 
@@ -103,6 +113,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gridAdapter = new GridAdapter(this,dataSensores);
 
         gridData.setAdapter(gridAdapter);
+
+        graphView = (GraphView)findViewById(R.id.graph);
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+                new DataPoint(0, 1),
+                new DataPoint(1, 5),
+                new DataPoint(2, 3),
+                new DataPoint(3, 2),
+                new DataPoint(4, 6)
+        });
+    graphView.addSeries(series);
 
     }
 
@@ -162,26 +182,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for(int i = 0;i<strData.length;i++){
             gridAdapter.setMedida(i,strData[i]);
         }
-
         gridData.setAdapter(gridAdapter);
-
-
     }
 
     void buttonInit(){
+        // Agrega el evento a cada boton y fija Views
         bConnect = (Button)findViewById(R.id.bConnect);
         bConnect.setOnClickListener(this);
 
-        lblData = (TextView)findViewById(R.id.lblData);
-        lblData.setText("Conectado");
+        btnDesconectar = (Button) findViewById(R.id.btnDesconectar);
+        btnDesconectar.setOnClickListener(this);
+
+        //lblData = (TextView)findViewById(R.id.lblData);
+        //lblData.setText("Conectado");
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.bConnect:
-                startActivity(new Intent("android.intent.action.BT1"));
-            break;
+                // Inicializa la conexion BT con un modulo especifico
+                BT = new Bluetooth(nombreModulo);
+                break;
+            case R.id.btnDesconectar:
+                // Cierra la conexion BT
+                BT.disconnect();
+                Toast.makeText(getApplicationContext(),"Desconectado",Toast.LENGTH_LONG).show();
+                break;
         }
     }
 }
